@@ -3,18 +3,10 @@ package com.example.ubpclient.controller;
 import com.example.ubpclient.dto.StatisticResult;
 import com.example.ubpclient.service.StatisticService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 
@@ -29,13 +21,6 @@ public class StatisticController {
         this.webClient = webClientBuilder.baseUrl("http://localhost:8080").build();
         this.statisticService=statisticService;
     }
-/*
-    public Mono<Details> someRestCall(String name) {
-        return this.webClient.get().url("/{name}/details", name)
-                .retrieve().bodyToMono(Details.class);
-    }*/
-
-
 
     @GetMapping("/population/{size}")
     public ResponseEntity<StatisticResult> getStatisticForPopulation(@PathVariable int size) throws Exception {
@@ -75,6 +60,18 @@ public class StatisticController {
         //si pas d'erreur on retourne la réponse avec le http code OK 200
         return ResponseEntity.ok(statResult);
 
+    }
+
+
+    // ici j'ai mis le handling d'une exception generique sur un endpoint on retourne par défaut BAD REQUEST + message exception
+    // Il est plus propre de le mettre dans une classe dédiée comme RestResponseEntityExceptionHandler mais je ne sais pas pourquoi elle semble ne pas etre prise en compte lorsque l'erreur arrive
+    // Pour l'exercice je l'ai mis dans le controller meme si ce n'est pas ce que j'aurais fait dans une situation réelle
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleNoSuchElementFoundException(
+            Exception exception
+    ) {
+        return ResponseEntity.badRequest()              //.status(HttpStatus.I_AM_A_TEAPOT)
+                .body(exception.getMessage());
     }
 
 }
